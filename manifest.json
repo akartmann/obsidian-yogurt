@@ -1,0 +1,9 @@
+{
+  "id": "yogurt-sync",
+  "name": "Yogurt Sync",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Sync meeting summaries and notes from the Yogurt desktop app into your vault.",
+  "author": "akartmann",
+  "isDesktopOnly": true
+}
