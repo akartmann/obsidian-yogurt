@@ -1,0 +1,51 @@
+name: Release
+
+# Push a tag that matches the version in manifest.json (no "v" prefix, as
+# Obsidian and BRAT expect), e.g. `git tag 0.1.0 && git push origin 0.1.0`.
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check tag matches manifest version
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          manifest=$(node -p "require('./manifest.json').version")
+          package=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$manifest" ] || [ "$tag" != "$package" ]; then
+            echo "::error::Tag $tag does not match manifest.json ($manifest) / package.json ($package)"
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+      - name: Package plugin
+        run: |
+          mkdir -p dist/yogurt-sync
+          cp main.js manifest.json dist/yogurt-sync/
+          (cd dist && zip -r yogurt-sync-${GITHUB_REF_NAME}.zip yogurt-sync)
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            main.js manifest.json "dist/yogurt-sync-${GITHUB_REF_NAME}.zip"

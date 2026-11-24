@@ -2,11 +2,28 @@
 
 Syncs meeting notes from [Yogurt](https://github.com/FrigadeHQ/yogurt), the private on-device meeting recorder, into your vault. It reads them through Yogurt's local MCP server, read-only. Desktop only.
 
+## Installation
+
+The plugin is not in the Obsidian community plugin directory yet. Install it from the [GitHub releases](https://github.com/akartmann/obsidian-yogurt/releases) in one of two ways.
+
+### With BRAT (gets updates automatically)
+
+1. Install and enable [BRAT](https://github.com/TfTHacker/obsidian42-brat) from **Settings → Community plugins → Browse**.
+2. Run **BRAT: Add a beta plugin for testing** from the command palette and enter `akartmann/obsidian-yogurt`.
+3. Enable **Yogurt Sync** under **Settings → Community plugins**.
+
+### Manually
+
+1. Download `yogurt-sync-<version>.zip` from the [latest release](https://github.com/akartmann/obsidian-yogurt/releases/latest).
+2. Unzip it into your vault's plugin folder, so you end up with `<vault>/.obsidian/plugins/yogurt-sync/main.js` and `manifest.json`. (The `.obsidian` folder is hidden: press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>.</kbd> in the macOS Finder to show it.) You can also download `main.js` and `manifest.json` from the release individually and put them in that folder.
+3. In Obsidian, open **Settings → Community plugins**, turn off Restricted mode if needed, click the refresh icon, and enable **Yogurt Sync**.
+
+To update manually, replace the two files with the ones from the newer release and restart Obsidian.
+
 ## Setup
 
 1. In Yogurt, open **Settings → AI apps** and turn access on.
-2. Install the plugin: copy `main.js` and `manifest.json` into `<vault>/.obsidian/plugins/yogurt-sync/`, then enable **Yogurt Sync** under Community plugins.
-3. Run **Yogurt Sync: Sync meetings now** from the command palette, or click the ribbon icon or the status bar item.
+2. Run **Yogurt Sync: Sync meetings now** from the command palette, or click the ribbon icon or the status bar item.
 
 By default the plugin connects to Yogurt's socket (`~/Library/Application Support/Yogurt/mcp.sock` on macOS, `~/.config/Yogurt/mcp.sock` on Linux, or the pipe named in `%APPDATA%\Yogurt\mcp.pipe` on Windows). When Yogurt is closed, the sync is skipped quietly. To have Yogurt start in the background when needed, switch **Connection → Connect through** to the `yogurt-mcp` helper and paste the helper command from Yogurt's AI apps settings.
 
@@ -65,5 +82,14 @@ npm test        # vitest: rendering, block merge, MCP client against a fake Yogu
 npm run build   # type-check and bundle to main.js
 npm run dev     # watch mode
 ```
+
+### Releasing
+
+```bash
+npm version patch   # or minor / major: bumps package.json, manifest.json and versions.json, commits and tags (e.g. 0.1.1)
+git push --follow-tags
+```
+
+Pushing the tag runs [the release workflow](.github/workflows/release.yml): it checks the tag matches `manifest.json`, runs the tests, builds, and publishes a GitHub release with `main.js`, `manifest.json` and a `yogurt-sync-<version>.zip`. Tags have no `v` prefix, as Obsidian and BRAT expect. If you raise `minAppVersion`, edit it in `manifest.json` before running `npm version`.
 
 Design: `docs/superpowers/specs/2026-11-20-yogurt-sync-design.md`.
